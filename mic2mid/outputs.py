@@ -1,4 +1,6 @@
 import logging
+import time
+import argparse
 from mic2mid.utils import NoteMapper
 
 log = logging.getLogger(__name__)
@@ -134,3 +136,38 @@ try:
     available["pygame"] = PyGameOutput
 except ImportError:
     available["pygame"] = "Failed to import pygame"
+
+
+try:
+    from midiutil.MidiFile import MIDIFile
+
+    class FileOutput(Output):
+        def __init__(self):
+            Output.__init__(self)
+
+            parser = argparse.ArgumentParser()
+            parser.add_argument("--outfile", "-O")
+            args, extra = parser.parse_known_args()
+
+            if not args.outfile:
+                raise Exception("When using '--output file', you also need '--outfile <filename.mid>'")
+            self.filename = args.outfile
+
+            log.info("Opening File output: %s", args.outfile)
+            self.midi = MIDIFile(1)
+            self.midi.addTrackName(0, 0, "Mic2Mid Track 0")
+            self.midi.addTempo(0, 0, 60)
+            self.midi.addProgramChange(0, 0, 0, 27)
+            self.start = time.time()
+
+        def __del__(self):
+            fp = open(self.filename, "wb")
+            self.midi.writeFile(fp)
+            fp.close()
+
+        def note_on(self, note):
+            self.midi.addNote(0, 0, self.note_to_midi(note), time.time() - self.start, 1, 100)
+
+    available["file"] = FileOutput
+except ImportError:
+    available["file"] = "Failed to import midiutil"

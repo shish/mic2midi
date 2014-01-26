@@ -4,6 +4,8 @@ import time
 import math
 import audioop
 import random
+import wave
+import argparse
 
 log = logging.getLogger(__name__)
 available = {}
@@ -108,6 +110,33 @@ try:
     available["pyaudio"] = PyAudioInput
 except ImportError:
     available["pyaudio"] = "Failed to import pyaudio"
+
+
+class FileInput(Input):
+    def __init__(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--infile", "-I")
+        args, extra = parser.parse_known_args()
+
+        if not args.infile:
+            raise Exception("When using '--input file', you also need '--infile <filename.wav>'")
+
+        log.info("Opening File input: %s", args.infile)
+        self.wav = wave.open(args.infile)
+
+        (self.nchannels, self.width, self.rate,
+        self.nframes, self.comptype, self.compname) = self.wav.getparams()
+
+    def read(self):
+        buffer_size = self.rate / 10
+        data = self.wav.readframes(buffer_size)
+        if not data:
+            raise Exception("End of input file")
+        samples = [audioop.getsample(data, self.width, n) for n in range(0, len(data)/self.width)]
+        time.sleep(float(buffer_size)/self.rate)
+        return len(samples), samples
+
+available["file"] = FileInput
 
 
 class DummyInput(Input):

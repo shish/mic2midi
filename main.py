@@ -16,7 +16,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", "-i", default="dummy")
     parser.add_argument("--output", "-o", default="dummy")
-    args = parser.parse_args()
+    args, extra = parser.parse_known_args()
 
     if args.input == "list":
         print "Inputs:"

@@ -13,12 +13,14 @@ Inputs:
 - ALSA (Tested on Linux)
 - JACK (Tested on Linux)
 - PyAudio (Tested on Win32)
+- File (16-bit mono .wav)
 - Dummy (Generate random A notes)
 
 Outputs:
 --------
 - PyGame
 - RtMIDI (Tested on Linux and Windows)
+- File (1-channel .mid)
 - Dummy (Just print the keys)
 
 loopmidi[1] can be useful for win32 -- mic2mid can use loopmidi as
