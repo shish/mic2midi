@@ -1,0 +1,55 @@
+#!/usr/bin/python
+
+import time, audioop
+import logging
+import argparse
+
+import mic2mid.inputs
+import mic2mid.process
+import mic2mid.outputs
+
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", "-i", default="auto")
+    parser.add_argument("--output", "-o", default="auto")
+    args = parser.parse_args()
+
+    if args.input == "list":
+        print "Inputs:"
+        for name, ob in mic2mid.inputs.available.items():
+            if type(ob) == str:
+                print " ", name, "-", ob
+            else:
+                print " ", name, "-", "ok"
+        input = None
+    elif args.input == "auto":
+        input = mic2mid.inputs.available["pyaudio"]()
+    else:
+        input = mic2mid.inputs.available[args.input]()
+
+    if args.output == "list":
+        print "Outputs:"
+        for name, ob in mic2mid.outputs.available.items():
+            if type(ob) == str:
+                print " ", name, "-", ob
+            else:
+                print " ", name, "-", "ok"
+        output = None
+    elif args.output == "auto":
+        output = mic2mid.outputs.available["rtmidi"]()
+    else:
+        output = mic2mid.outputs.available[args.input]()
+
+    if input and output:
+        try:
+            mic2mid.process.process(input, output)
+        except KeyboardInterrupt:
+            print "Got Ctrl-C, exiting"
+
+
+if __name__ == "__main__":
+    main()
