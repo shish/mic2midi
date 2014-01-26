@@ -27,6 +27,8 @@ def main():
                 print " ", name, "-", "ok"
         input = None
     elif args.input == "auto":
+        # TODO: give plugins priorities, pick the one which
+        # has the highest priority out of those which work
         input = mic2mid.inputs.available["pyaudio"]()
     else:
         input = mic2mid.inputs.available[args.input]()
@@ -40,9 +42,11 @@ def main():
                 print " ", name, "-", "ok"
         output = None
     elif args.output == "auto":
+        # TODO: give plugins priorities, pick the one which
+        # has the highest priority out of those which work
         output = mic2mid.outputs.available["rtmidi"]()
     else:
-        output = mic2mid.outputs.available[args.input]()
+        output = mic2mid.outputs.available[args.output]()
 
     if input and output:
         try:
