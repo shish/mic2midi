@@ -14,8 +14,8 @@ log = logging.getLogger()
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input", "-i", default="auto")
-    parser.add_argument("--output", "-o", default="auto")
+    parser.add_argument("--input", "-i", default="dummy")
+    parser.add_argument("--output", "-o", default="dummy")
     args = parser.parse_args()
 
     if args.input == "list":

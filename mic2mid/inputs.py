@@ -114,11 +114,15 @@ class DummyInput(Input):
     def __init__(self):
         log.info("Opening Dummy input")
         self.rate = 8000
+        self._n = 0
+        self._frequency = 440
 
     def read(self):
-        frequency = random.choice([110, 220, 440, 880])
+        self._n = self._n + 1
+        if self._n % 1000 == 0:
+            self._frequency = random.choice([110, 220, 440, 880])
         duration_in_samples = self.rate / 10
-        samples = [math.sin(2.0 * math.pi * frequency * t / self.rate) * (2 ** 16) for t in xrange(0, duration_in_samples)]
+        samples = [math.sin(2.0 * math.pi * self._frequency * t / self.rate) * (2 ** 16) for t in xrange(0, duration_in_samples)]
         time.sleep(1.0/self.rate)
         return len(samples), samples
 
