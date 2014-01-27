@@ -22,7 +22,7 @@ def process(input, output):
 
         # Check if the total volume of the noise is over a basic threshold
         # (perhaps we should check the volume of individual notes?)
-        if max(samples) > 5000:
+        if max(samples) > 4000:
             # Find the most powerful frequency (bail if we can't find one)
             # eg (430Hz * 10)
             peak_frequency, power = get_peak_frequency(spectrum, input.rate)

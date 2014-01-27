@@ -5,22 +5,24 @@ import math
 import audioop
 import random
 import wave
-import argparse
 
 log = logging.getLogger(__name__)
 available = {}
 
 
 class Input(object):
-    pass
+    def close(self):
+        pass
 
 
 try:
     import alsaaudio
 
     class AlsaInput(Input):
-        def __init__(self, rate=8000):
-            self.rate = rate
+        url_example = "alsa://"
+
+        def __init__(self, url):
+            self.rate = 48000
 
             log.info("Opening ALSA input")
             # Open the device in nonblocking capture mode. The last argument could
@@ -59,7 +61,9 @@ try:
     import jack
 
     class JackInput(Input):
-        def __init__(self):
+        url_example = "jack://"
+
+        def __init__(self, url):
             log.info("Opening JACK input")
             jack.attach("Noter Virtual Keyboard")
             self.rate = jack.get_sample_rate()
@@ -91,8 +95,10 @@ try:
     import pyaudio
 
     class PyAudioInput(Input):
-        def __init__(self):
-            self.rate = 41000
+        url_example = "pyaudio://"
+
+        def __init__(self, url):
+            self.rate = 48000
             p = pyaudio.PyAudio()
             self.stream = p.open(
                 format=pyaudio.paInt16,
@@ -113,16 +119,16 @@ except ImportError:
 
 
 class FileInput(Input):
-    def __init__(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--infile", "-I")
-        args, extra = parser.parse_known_args()
+    url_example = "file://foo.wav"
 
-        if not args.infile:
-            raise Exception("When using '--input file', you also need '--infile <filename.wav>'")
+    def __init__(self, url):
+        infile = url.netloc + url.path
+        if not infile:
+            print "file:// input needs a filename"
+            raise ValueError("missing parameter")
 
-        log.info("Opening File input: %s", args.infile)
-        self.wav = wave.open(args.infile)
+        log.info("Opening File input: %s", infile)
+        self.wav = wave.open(infile)
 
         (self.nchannels, self.width, self.rate,
         self.nframes, self.comptype, self.compname) = self.wav.getparams()
@@ -131,7 +137,7 @@ class FileInput(Input):
         buffer_size = self.rate / 10
         data = self.wav.readframes(buffer_size)
         if not data:
-            raise Exception("End of input file")
+            raise EOFError("End of input file")
         samples = [audioop.getsample(data, self.width, n) for n in range(0, len(data)/self.width)]
         time.sleep(float(buffer_size)/self.rate)
         return len(samples), samples
@@ -140,7 +146,9 @@ available["file"] = FileInput
 
 
 class DummyInput(Input):
-    def __init__(self):
+    url_example = "dummy://"
+
+    def __init__(self, url):
         log.info("Opening Dummy input")
         self.rate = 8000
         self._n = 0

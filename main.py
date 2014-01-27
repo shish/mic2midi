@@ -2,7 +2,8 @@
 
 import time, audioop
 import logging
-import argparse
+import sys
+from urlparse import urlparse
 
 from mic2midi.inputs import available as available_inputs
 from mic2midi.process import process
@@ -12,47 +13,47 @@ logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger()
 
 
+def help():
+    print "Usage: %s <input url> <output url>" % sys.argv[0]
+
+    print "\nInputs:"
+    for name, ob in available_inputs.items():
+        if type(ob) == str:
+            print " ", name, "-", ob
+        else:
+            print " ", name, "-", ob.url_example
+
+    print "\nOutputs:"
+    for name, ob in available_outputs.items():
+        if type(ob) == str:
+            print " ", name, "-", ob
+        else:
+            print " ", name, "-", ob.url_example
+
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--input", "-i", default="dummy")
-    parser.add_argument("--output", "-o", default="dummy")
-    args, extra = parser.parse_known_args()
+    input = None
+    output = None
+    try:
+        input_url = urlparse(sys.argv[1])
+        output_url = urlparse(sys.argv[2])
+    except IndexError:
+        help()
+        return 1
 
-    if args.input == "list":
-        print "Inputs:"
-        for name, ob in available_inputs.items():
-            if type(ob) == str:
-                print " ", name, "-", ob
-            else:
-                print " ", name, "-", "ok"
-        input = None
-    elif args.input == "auto":
-        # TODO: give plugins priorities, pick the one which
-        # has the highest priority out of those which work
-        input = available_inputs["pyaudio"]()
-    else:
-        input = available_inputs[args.input]()
+    try:
+        input = available_inputs[input_url.scheme](input_url)
+        output = available_outputs[output_url.scheme](output_url)
+    except ValueError:
+        # missing params in URL
+        return 2
 
-    if args.output == "list":
-        print "Outputs:"
-        for name, ob in available_outputs.items():
-            if type(ob) == str:
-                print " ", name, "-", ob
-            else:
-                print " ", name, "-", "ok"
-        output = None
-    elif args.output == "auto":
-        # TODO: give plugins priorities, pick the one which
-        # has the highest priority out of those which work
-        output = available_outputs["rtmidi"]()
-    else:
-        output = available_outputs[args.output]()
-
-    if input and output:
-        try:
-            process(input, output)
-        except KeyboardInterrupt:
-            print "Got Ctrl-C, exiting"
+    try:
+        process(input, output)
+    except EOFError:
+        print "End of file"
+        output.close()
+    except KeyboardInterrupt:
+        print "Got Ctrl-C, exiting"
 
 
 if __name__ == "__main__":

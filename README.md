@@ -4,14 +4,10 @@ Mic2Midi
 Usage:
 ------
 ```
-./main.py --input alsa --output rtmidi
+./main.py <input url> <output url>
+./main.py alsa:// rtmidi://0
+./main.py file://song.wav file://song.mid
 ```
-```
-./main.py --input file --infile song.wav --output file --outfile song.mid
-```
-
-`-i list` and `-o list` will show drivers and whether or not the necessary
-libraries to use them are available.
 
 You can mix and match realtime and files; everything is processed in realtime
 (It should be possible to make file-to-file run as fast as the CPU can handle,
@@ -32,11 +28,9 @@ Outputs:
 - File (1-channel .mid)
 - Dummy (Just print the keys)
 
-The RtMIDI driver is currently hard-coded to use output port 1 because that's
-where my loopmidi[1] instance listens. If you're running on windows
-and just want to play notes directly, you can change it to use port
-0 to write midi commands into the OS's player software.
+Note that on windows, port 0 (rtmidi://0) is the software synth that
+plays midi directly, which can be useful for tweaking settings.
 
-[1] loopmidi can be useful for win32 -- mic2mid can use loopmidi as
-an output device, then your other software can use loopmidi as
+loopmidi can be useful for win32 -- mic2midi can use loopmidi as an
+output device (rtmidi://1), then your other software can use loopmidi as
 an input device - http://www.tobias-erichsen.de/software/loopmidi.html
