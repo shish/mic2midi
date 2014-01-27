@@ -1,5 +1,5 @@
-Mic2Mid
-=======
+Mic2Midi
+========
 
 Usage:
 ------

@@ -1,5 +1,5 @@
 from numpy.fft import fft
-from mic2mid.utils import NoteMapper
+from mic2midi.utils import NoteMapper
 
 import logging
 

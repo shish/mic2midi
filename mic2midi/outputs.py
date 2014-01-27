@@ -1,7 +1,7 @@
 import logging
 import time
 import argparse
-from mic2mid.utils import NoteMapper
+from mic2midi.utils import NoteMapper
 
 log = logging.getLogger(__name__)
 available = {}

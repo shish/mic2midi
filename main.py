@@ -4,9 +4,9 @@ import time, audioop
 import logging
 import argparse
 
-import mic2mid.inputs
-import mic2mid.process
-import mic2mid.outputs
+from mic2midi.inputs import available as available_inputs
+from mic2midi.process import process
+from mic2midi.outputs import available as available_outputs
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger()
@@ -20,7 +20,7 @@ def main():
 
     if args.input == "list":
         print "Inputs:"
-        for name, ob in mic2mid.inputs.available.items():
+        for name, ob in available_inputs.items():
             if type(ob) == str:
                 print " ", name, "-", ob
             else:
@@ -29,13 +29,13 @@ def main():
     elif args.input == "auto":
         # TODO: give plugins priorities, pick the one which
         # has the highest priority out of those which work
-        input = mic2mid.inputs.available["pyaudio"]()
+        input = available_inputs["pyaudio"]()
     else:
-        input = mic2mid.inputs.available[args.input]()
+        input = available_inputs[args.input]()
 
     if args.output == "list":
         print "Outputs:"
-        for name, ob in mic2mid.outputs.available.items():
+        for name, ob in available_outputs.items():
             if type(ob) == str:
                 print " ", name, "-", ob
             else:
@@ -44,13 +44,13 @@ def main():
     elif args.output == "auto":
         # TODO: give plugins priorities, pick the one which
         # has the highest priority out of those which work
-        output = mic2mid.outputs.available["rtmidi"]()
+        output = available_outputs["rtmidi"]()
     else:
-        output = mic2mid.outputs.available[args.output]()
+        output = available_outputs[args.output]()
 
     if input and output:
         try:
-            mic2mid.process.process(input, output)
+            process(input, output)
         except KeyboardInterrupt:
             print "Got Ctrl-C, exiting"
 
