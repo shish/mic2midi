@@ -11,19 +11,32 @@ def process(input, output):
 
     while True:
         # Read data from device
-        l, samples = input.read()
-        if l:
-            spectrum = get_spectrum(samples)
-            if max(samples) > 5000:
-                peak_frequency, power = get_peak_frequency(spectrum, input.rate)
-                #log.info("%s %s", peak_frequency, power)
+        # eg noise = blablabla
+        sample_count, samples = input.read()
+        if not sample_count:
+            continue
 
-                # ignore mic noise / silence / static
-                if 10 < peak_frequency < 8000:
-                    note = mapper.frequency_to_note(peak_frequency)
-                    output.trigger_note(note)
-            else:
-                output.trigger_note(None)
+        # Turn noise into individual frequencies
+        # eg noise = (260Hz * 2) + (430Hz * 10) + (1800Hz * 6)
+        spectrum = get_spectrum(samples)
+
+        # Check if the total volume of the noise is over a basic threshold
+        # (perhaps we should check the volume of individual notes?)
+        if max(samples) > 5000:
+            # Find the most powerful frequency (bail if we can't find one)
+            # eg (430Hz * 10)
+            peak_frequency, power = get_peak_frequency(spectrum, input.rate)
+            if not peak_frequency:
+                continue
+
+            # Round the frequency to the closest note
+            # eg 430Hz detected -> 392Hz = G, 440Hz = A -> A is closest
+            note = mapper.frequency_to_note(peak_frequency)
+
+            # Print the note
+            output.trigger_note(note)
+        else:
+            output.trigger_note(None)
 
 
 def get_spectrum(samples):
@@ -44,6 +57,13 @@ def get_peak_frequency(spectrum, rate):
 
 
 def get_peak_frequencies(spectrum, rate):
+    """
+    Given a FFT result spectrum, return a list of
+
+        [(freq, power), (freq, power), (freq, power), ...]
+
+    sorted by power, most powerful first
+    """
     best = sorted(range(len(spectrum)), key=lambda i: spectrum[i], reverse=True)[:3]
     return [(n * rate / (len(spectrum) * 2), spectrum[n]) for n in best]
 
