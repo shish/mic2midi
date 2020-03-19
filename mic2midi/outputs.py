@@ -90,6 +90,7 @@ try:
 
         def __init__(self, url):
             Output.__init__(self)
+            self.midi = rtmidi.MidiOut()
             if not url.netloc:
                 print "rtmidi:// needs a port number"
                 print "\nAvailable Ports:"
@@ -98,7 +99,6 @@ try:
                     raise ValueError("RtMidi needs a port")
             port = int(url.netloc)
             log.info("Opening RtMIDI output #%d" % port)
-            self.midi = rtmidi.MidiOut()
             self.midi.open_port(port)
             #self.midi.open_virtual_port("Noter Virtual Keyboard")
 
@@ -144,7 +144,7 @@ try:
                 raise ValueError("PyGame output needs a device ID")
 
             device_id = int(url.netloc)
-            log.info("Opening PyGame output")
+            log.info("Opening PyGame output %d (%s)" % (device_id, pygame.midi.get_device_info(device_id)[1]))
             clock = pygame.time.Clock()
             midi_out = pygame.midi.Output(device_id, 0)
 

@@ -41,8 +41,17 @@ def main():
         return 1
 
     try:
-        input = available_inputs[input_url.scheme](input_url)
-        output = available_outputs[output_url.scheme](output_url)
+        if type(available_inputs[input_url.scheme]) == str:
+            print "Input Error: %s" % available_inputs[input_url.scheme]
+            return 2
+        else:
+            input = available_inputs[input_url.scheme](input_url)
+
+        if type(available_outputs[output_url.scheme]) == str:
+            print "Output Error: %s" % available_outputs[output_url.scheme]
+            return 2
+        else:
+            output = available_outputs[output_url.scheme](output_url)
     except ValueError:
         # missing params in URL
         return 2
